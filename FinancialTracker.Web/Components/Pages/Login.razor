@@ -1,0 +1,36 @@
+@page "/Login"
+<PageTitle>Login</PageTitle>
+
+<body>
+    <div id="Main-login">
+        <div id="form-container">
+            <EditForm Model="@formModel" onsubmit="@loginFormSubmit">
+                <legend>Login To Our Financial Tracker</legend>
+                <div id="login_Username">
+                    <label for="usernameInput"></label>
+                    <InputText name="usernameInput" id="usernameInput" @bind-Value=formModel.Username></InputText>
+                </div>
+                <div id="login_password">
+                    <label for="passwordInput"></label>
+                    <InputText type="password" name="passwordInput" id="passwordInput" @bind-Value=formModel.Password></InputText>
+                </div>
+                <input type="submit" id="submitBtn" class="btn bnt/primary" />
+            </EditForm>
+        </div>
+    </div>
+</body>
+
+
+@code {
+    FormModel formModel = new FormModel();
+    class FormModel
+    {
+        public string Username { get; set; }
+        public string Password { get; set; }
+    }
+
+    void loginFormSubmit()
+    {
+        
+    }
+}
