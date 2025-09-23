@@ -1,36 +1,169 @@
 @page "/Login"
+@using Microsoft.AspNetCore.Http.Features
+@inject NavigationManager NavigationManager
 <PageTitle>Login</PageTitle>
 
 <body>
     <div id="Main-login">
         <div id="form-container">
-            <EditForm Model="@formModel" onsubmit="@loginFormSubmit">
+            <div id="Login Setup">
                 <legend>Login To Our Financial Tracker</legend>
                 <div id="login_Username">
-                    <label for="usernameInput"></label>
-                    <InputText name="usernameInput" id="usernameInput" @bind-Value=formModel.Username></InputText>
+                    <label for="usernameInput">Enter Username</label>
+                    <input name="usernameInput" id="usernameInput" @bind="Username" />
+                    <p id="usernameErrorMessage">@UsernameError</p>
                 </div>
                 <div id="login_password">
-                    <label for="passwordInput"></label>
-                    <InputText type="password" name="passwordInput" id="passwordInput" @bind-Value=formModel.Password></InputText>
+                    <label for="passwordInput">Enter Password:</label>
+                    <input type="@PasswordInputType" name="passwordInput" id="passwordInput" @bind="Password" />
+                    <p id="passwordErrorMessage">@PasswordError</p>
+                    <button type="button" @onclick="ShowPasswordField">@(ShowPasswordText ? "Hide" : "Show")</button>
                 </div>
-                <input type="submit" id="submitBtn" class="btn bnt/primary" />
-            </EditForm>
+                @if (ShowConfirmPassword)
+                {
+                    <div id="confirm_login_password">
+                        <label for="confirmPasswordInput">Confirm your Password:</label>
+                        <input type="@ConfirmPasswordInputType" name="confirmPasswordInput" id="confirmPasswordInput"
+                            @bind="ConfirmPassword" />
+                        <p id="confirmPasswordErrorMessage">@ConfirmPasswordError</p>
+                        <button type="button" @onclick="ShowConfirmPasswordField">@(ShowConfirmPasswordText ? "Hide" :
+                                                    "Show")</button>
+                    </div>
+                }
+                <div id="modeToggle">
+                    @if (IsLoginMode)
+                    {
+                        <button type="button" @onclick="() => SwitchLoginFormat(false)">Create Account</button>
+                    }
+                    else
+                    {
+                        <button type="button" @onclick="() => SwitchLoginFormat(true)">I already Have an Account</button>
+                    }
+                </div>
+                <div id="submitDiv">
+                    <button type="button" @onclick="ValidateUser">Submit</button>
+                    <p id="accountErrorMessage">@AccountError</p>
+                </div>
+            </div>
         </div>
     </div>
 </body>
 
 
 @code {
-    FormModel formModel = new FormModel();
-    class FormModel
+    public string Username = "";
+    public string Password = "";
+    public string ConfirmPassword = "";
+    public static SQLuserData SQLuserDataManager = new SQLuserData();
+    public static Dictionary<string, string> userData = SQLuserDataManager.GetUserData();
+    public static bool isLoggedIn;
+    private bool ShowConfirmPassword = false;
+    private bool ShowPasswordText = false;
+    private bool ShowConfirmPasswordText = false;
+    private bool IsLoginMode = true;
+    private string UsernameError = "";
+    private string PasswordError = "";
+    private string ConfirmPasswordError = "";
+    private string AccountError = "";
+
+    private string PasswordInputType => ShowPasswordText ? "text" : "password";
+    private string ConfirmPasswordInputType => ShowConfirmPasswordText ? "text" : "password";
+
+    protected override void OnInitialized()
     {
-        public string Username { get; set; }
-        public string Password { get; set; }
+        IsLoginMode = true;
+        ShowConfirmPassword = !IsLoginMode;
+        ShowConfirmPasswordText = false;
     }
 
-    void loginFormSubmit()
+    private void ShowPasswordField()
     {
-        
+        ShowPasswordText = !ShowPasswordText;
     }
+    private void ShowConfirmPasswordField()
+    {
+        ShowConfirmPasswordText = !ShowConfirmPasswordText;
+    }
+
+    private void ValidateUser()
+    {
+        UsernameError = PasswordError = ConfirmPasswordError = AccountError = "";
+
+        if (string.IsNullOrWhiteSpace(Username))
+        {
+            UsernameError = "Username is required.";
+        }
+        if (string.IsNullOrWhiteSpace(Password))
+        {
+            PasswordError = "Password is required.";
+        }
+
+
+        if (ShowConfirmPassword)
+        {
+            if (string.IsNullOrWhiteSpace(ConfirmPassword))
+            {
+                ConfirmPasswordError = "Please confirm your password.";
+            }
+            else if (Password != ConfirmPassword)
+            {
+                ConfirmPasswordError = "Passwords do not match.";
+            }
+        }
+
+        if (!string.IsNullOrEmpty(UsernameError) || !string.IsNullOrEmpty(PasswordError) || (ShowConfirmPassword &&
+        !string.IsNullOrEmpty(ConfirmPasswordError)))
+        {
+            StateHasChanged();
+            return;
+        }
+
+
+        userData = SQLuserDataManager.GetUserData();
+
+        if (!ShowConfirmPassword)
+        {
+            if (userData.TryGetValue(Username, out string? storedPassword))
+            {
+                if (storedPassword == Password)
+                {
+                    isLoggedIn = true;
+                    NavigationManager.NavigateTo($"/Home?user={Uri.EscapeDataString(Username)}");
+                }
+                else
+                {
+                    PasswordError = "Incorrect password.";
+                }
+            }
+            else
+            {
+                AccountError = "No account found for that username.";
+            }
+        }
+        else
+        {
+            if (userData.ContainsKey(Username))
+            {
+                AccountError = "An account with that username already exists.";
+            }
+            else
+            {
+                userData[Username] = Password;
+                SQLuserDataManager.SaveUserData(userData);
+                isLoggedIn = true;
+                NavigationManager.NavigateTo($"/Home?user={Uri.EscapeDataString(Username)}");
+            }
+        }
+        StateHasChanged();
+    }
+    private void SwitchLoginFormat(bool haveAnAccount)
+    {
+        IsLoginMode = haveAnAccount;
+        ShowConfirmPassword = !IsLoginMode;
+        ShowConfirmPasswordText = false;
+
+        UsernameError = PasswordError = ConfirmPasswordError = AccountError = "";
+        StateHasChanged();
+    }
+
 }
