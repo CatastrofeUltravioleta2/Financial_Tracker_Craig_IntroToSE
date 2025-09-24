@@ -3,6 +3,61 @@
 @inject NavigationManager NavigationManager
 <PageTitle>Login</PageTitle>
 
+<style>
+  /* Login page styles — always dark */
+  :root{
+    --p1:#402E7A;
+    --p2:#4C3BCF;
+    --p3:#4B70F5;
+    --accent:#3DC2EC;
+    --bg:#070712;
+    --card-bg:#0A0E22;
+    --text:#EAF4FF;
+    --muted:#B7C7F7;
+    --radius:14px;
+    --input-border: rgba(255,255,255,0.03);
+  }
+
+  html, body { margin:0; height:100%; background-color:var(--bg); color:var(--text); font-family:Inter,system-ui; }
+
+  body { display:flex; align-items:center; justify-content:center; padding: 24px; }
+
+  #form-container {
+    width:420px;
+    max-width:95%;
+    background: var(--card-bg);
+    padding:26px;
+    border-radius:var(--radius);
+    border: 1px solid rgba(76,59,207,0.10);
+    display:flex; flex-direction:column; gap:12px;
+    margin: 32px auto;
+  }
+
+  #form-container label { display:block; margin-bottom:6px; color:var(--p2); font-weight:700; }
+  #form-container input {
+    width:100%;
+    padding:10px 12px;
+    border-radius:10px;
+    border:1px solid var(--input-border);
+    background:transparent;
+    color:var(--text);
+  }
+
+  /* include .showButton so show/hide buttons use the same visual style */
+  #submitDiv button, #modeToggle button, .showButton {
+    padding:15px 14px; border-radius:10px; border:none; background-color: var(--p3); color:white; font-weight:800; cursor:pointer;
+    display:inline-block; vertical-align:middle;
+  }
+
+  #usernameErrorMessage, #passwordErrorMessage, #confirmPasswordErrorMessage, #accountErrorMessage {
+    color:#FF6B6B;
+    font-weight:700;
+    font-size:0.9rem;
+  }
+
+</style>
+
+
 <body>
     <div id="Main-login">
         <div id="form-container">
@@ -17,7 +72,7 @@
                     <label for="passwordInput">Enter Password:</label>
                     <input type="@PasswordInputType" name="passwordInput" id="passwordInput" @bind="Password" />
                     <p id="passwordErrorMessage">@PasswordError</p>
-                    <button type="button" @onclick="ShowPasswordField">@(ShowPasswordText ? "Hide" : "Show")</button>
+                    <button type="button" class="showButton" @onclick="ShowPasswordField">@(ShowPasswordText ? "Hide" : "Show")</button>
                 </div>
                 @if (ShowConfirmPassword)
                 {
@@ -26,7 +81,7 @@
                         <input type="@ConfirmPasswordInputType" name="confirmPasswordInput" id="confirmPasswordInput"
                             @bind="ConfirmPassword" />
                         <p id="confirmPasswordErrorMessage">@ConfirmPasswordError</p>
-                        <button type="button" @onclick="ShowConfirmPasswordField">@(ShowConfirmPasswordText ? "Hide" :
+                        <button type="button" class="showButton" @onclick="ShowConfirmPasswordField">@(ShowConfirmPasswordText ? "Hide" :
                                                     "Show")</button>
                     </div>
                 }

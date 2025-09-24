@@ -1,6 +1,106 @@
 ﻿@page "/Home/{Username}"
 @inject NavigationManager navManager
 
+<style>
+  /* Home page styles — always dark */
+  :root{
+    --p1:#402E7A;
+    --p2:#4C3BCF;
+    --p3:#4B70F5;
+    --accent:#3DC2EC;
+    --bg:#070712;
+    --card-bg:#0C0F28;
+    --text:#EAF4FF;
+    --muted:#B9C8F6;
+    --radius:12px;
+    --input-border: rgba(255,255,255,0.12); /* increased visibility */
+  }
+
+  html, body { height:100%; margin:0; background-color:var(--bg); color:var(--text); font-family:Inter,system-ui; }
+
+  #TransactionMainPage {
+    max-width:1100px;
+    margin: 28px auto;
+    text-align:center;
+    padding:20px;
+    border-radius:var(--radius);
+    background: var(--card-bg);
+    border: 1px solid rgba(76,59,207,0.10);
+  }
+
+  #TransactionFilterDiv {
+    max-width:1100px;
+    margin:18px auto;
+    display:flex;
+    gap:12px;
+    align-items:center;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    padding:10px;
+  }
+
+  #TransactionFilterDiv > div {
+    background:transparent;
+    padding:10px;
+    border-radius:10px;
+    border:1px solid var(--input-border);
+    min-width:160px;
+  }
+
+  /* Make inputs more visible with clear border */
+  #TransactionFilterDiv input[type="date"],
+  #TransactionFilterDiv input[type="text"],
+  #TransactionFilterDiv input[type="number"],
+  #TransactionFilterDiv select {
+    padding:8px 10px;
+    border-radius:8px;
+    border:1px solid var(--input-border);
+    background: transparent;
+    color:var(--text);
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+  }
+
+  /* Style the select dropdown options to match dark theme */
+  #TransactionFilterDiv select option {
+    background: var(--card-bg);
+    color: var(--text);
+  }
+
+  /* Improve focus state */
+  #TransactionFilterDiv input:focus, #TransactionFilterDiv select:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(76,59,207,0.06);
+  }
+
+  #TransactionDiv { max-width:1100px; margin:18px auto; display:flex; flex-direction:column; gap:12px; padding: 6px; }
+
+  .TransactionCard {
+    background: var(--card-bg);
+    padding:12px;
+    border-radius:12px;
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+    border: 1px solid rgba(60,194,236,0.06);
+    cursor:pointer;
+  }
+
+  #TotalAmount { text-align:right; font-weight:800; color:var(--p3); }
+
+  button {
+    padding:10px 12px;
+    border-radius:10px;
+    border:none;
+    background-color: var(--p3);
+    color:white;
+    font-weight:700;
+    cursor:pointer;
+  }
+
+</style>
+
 <PageTitle>Home</PageTitle>
 <header>
     <h1>Personal Financial Tracker</h1>
