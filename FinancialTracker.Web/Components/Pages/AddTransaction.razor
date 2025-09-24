@@ -1,0 +1,98 @@
+@page "/AddTransaction/{Username}"
+@inject NavigationManager navManager
+
+<PageTitle>Home</PageTitle>
+<header>
+    <h1>Personal Financial Tracker</h1>
+    <nav>
+        <a href="">Home</a>
+        <a href="">Budget</a>
+        <a href="">Summary/Comparison</a>
+    </nav>
+</header>
+
+<body>
+    <h1>@(Id == 0 ? "Add A new Transaction" : "Edit Transaction")</h1>
+    <div id="AddTransactionDiv">
+        <div class="addTransactionFieldDiv">
+            <label for="Name">Transaction Name:</label>
+            <input id="Name" @bind=CurrentTransaction.Name />
+        </div>
+        <div class="addTransactionFieldDiv">
+            <label for="Amount">Amount:</label>
+            <input id="Amount" @bind="CurrentTransaction.Amount" />
+        </div>
+        <div class="addTransactionFieldDiv">
+            <label for="Date">Date:</label>
+            <input type="date"id="Date" @bind="CurrentTransaction.Date" readonly/>
+        </div>
+        <div class="addTransactionFieldDiv">
+            <label for="Category">Category:</label>
+            <input id="Category" @bind="CurrentTransaction.Category" />
+        </div>
+        <div class="addTransactionFieldDiv">
+            <label for="Notes">Notes:</label>
+            <textarea id="Notes" @bind="CurrentTransaction.Notes" />
+        </div>
+
+        <div id="AddSaveTransactionButtons">
+            <button @onclick="AddSaveTransaction">@(Id == 0 ? "Add Transaction" : "Save Changes")</button>
+            <button @onclick="CancelAddTransaction">Cancel</button>
+            <p id="AddTransactionErrorMessage">@erroMessage</p>
+        </div>
+    </div>
+</body>
+
+@code {
+    [Parameter]
+    public string Username { get; set; }
+    [SupplyParameterFromQuery]
+    public int Id { get; set; }
+    private Transaction CurrentTransaction;
+    private string erroMessage;
+    public static SQLTransactionData TransactionDataManager = new SQLTransactionData();
+    Dictionary<int, (string, string, decimal, DateTime, string, string)>? AllTransactions;
+    protected override void OnInitialized()
+    {
+        AllTransactions = TransactionDataManager.GetTransactionByUser(Username);
+        if (Id != 0)
+        {
+            var transactionData = AllTransactions[Id];
+            CurrentTransaction = Transaction.Create(transactionData.Item2, transactionData.Item3, transactionData.Item4,
+            transactionData.Item5, transactionData.Item6);
+        }
+        else
+        {
+            CurrentTransaction = Transaction.Create("", 0, DateTime.Now, "", "");
+        }
+
+    }
+    private void CancelAddTransaction()
+    {
+        navManager.NavigateTo($"/Home/{Username}");
+    }
+
+    private void AddSaveTransaction()
+    {
+        if (CurrentTransaction.Name == "" || CurrentTransaction.Amount == 0 || CurrentTransaction.Category == "")
+        {
+            erroMessage = "Please fill out all required fields";
+        }
+        else
+        {  
+            if(Id==0)
+            {
+                int highestId = AllTransactions.Count == 0? 1 : AllTransactions.Keys.Max();
+                AllTransactions[highestId+1] = (Username, CurrentTransaction.Name, CurrentTransaction.Amount, CurrentTransaction.Date,
+                CurrentTransaction.Category, CurrentTransaction.Notes);
+            }
+            else
+            {
+                AllTransactions[Id] = (Username, CurrentTransaction.Name, CurrentTransaction.Amount, CurrentTransaction.Date,
+                CurrentTransaction.Category, CurrentTransaction.Notes);
+            }
+            TransactionDataManager.SaveTransactionData(AllTransactions);
+            navManager.NavigateTo($"/Home/{Username}");
+        }
+    }
+}

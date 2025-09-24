@@ -1,4 +1,4 @@
-@page "/Login"
+@page "/"
 @using Microsoft.AspNetCore.Http.Features
 @inject NavigationManager NavigationManager
 <PageTitle>Login</PageTitle>
@@ -128,7 +128,7 @@
                 if (storedPassword == Password)
                 {
                     isLoggedIn = true;
-                    NavigationManager.NavigateTo($"/Home?user={Uri.EscapeDataString(Username)}");
+                    NavigationManager.NavigateTo($"/Home/{Username}");
                 }
                 else
                 {
@@ -151,7 +151,7 @@
                 userData[Username] = Password;
                 SQLuserDataManager.SaveUserData(userData);
                 isLoggedIn = true;
-                NavigationManager.NavigateTo($"/Home?user={Uri.EscapeDataString(Username)}");
+                NavigationManager.NavigateTo($"/Home/{Username}");
             }
         }
         StateHasChanged();

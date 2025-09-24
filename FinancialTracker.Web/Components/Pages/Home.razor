@@ -1,4 +1,67 @@
-﻿@page "/"
+﻿@page "/Home/{Username}"
+@using System.Transactions
+@inject NavigationManager navManager
 
 <PageTitle>Home</PageTitle>
+<header>
+    <h1>Personal Financial Tracker</h1>
+    <nav>
+        <a href="">Home</a>
+        <a href="">Budget</a>
+        <a href="">Summary/Comparison</a>
+    </nav>
+</header>
 
+<body>
+    <div id="TransactionMainPage">
+        <h2>Welcome to the Personal Financial Tracker</h2>
+        <p>This application helps you manage your personal finances by tracking your income, expenses, and budgets.</p>
+    </div>
+    <div id="TransactionDiv">
+        @if (CurrentUserTransactions.Count == 0)
+        {
+            <p>No transactions found. Please add a transaction.</p>
+        }
+        else
+        {
+            <h2>@Username Transactions</h2>
+            @foreach (KeyValuePair<int, (string, string, decimal, DateTime, string, string)> transaction in CurrentUserTransactions)
+            {
+                <div @onclick="() => EditTransaction(transaction.Key)" class="TransactionCard">
+                    <h3>@transaction.Value.Item2</h3>
+                    <p>Amount: @transaction.Value.Item3.ToString("C")</p>
+                    <p>Date: @transaction.Value.Item4.ToShortDateString()</p>
+                    <p>Category: @transaction.Value.Item5</p>
+                    <p>Notes: @transaction.Value.Item6</p>
+                </div>
+            }
+        }
+        <button @onclick="AddTransaction">AddTransaction</button>
+    </div>
+</body>
+
+@code {
+    [Parameter]
+    public string Username { get; set; }
+    public Dictionary<int, (string, string, decimal, DateTime, string, string)> CurrentUserTransactions = new
+    Dictionary<int, (string, string, decimal, DateTime, string, string)>();
+    public static SQLTransactionData TransactionDataManager = new SQLTransactionData();
+    protected override void OnInitialized()
+    {
+        if (string.IsNullOrEmpty(Username))
+        {
+            navManager.NavigateTo("/");
+        }
+        CurrentUserTransactions = TransactionDataManager.GetTransactionByUser(Username);
+    }
+
+    private void AddTransaction()
+    {
+        navManager.NavigateTo($"/AddTransaction/{Username}/?Id=0");
+    }
+
+    private void EditTransaction(int TransactionId)
+    {
+        navManager.NavigateTo($"/AddTransaction/{Username}/?Id={TransactionId}");
+    }
+}
