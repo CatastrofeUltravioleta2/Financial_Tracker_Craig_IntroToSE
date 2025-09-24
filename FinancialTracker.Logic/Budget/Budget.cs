@@ -1,23 +1,63 @@
-public class Budget
+using System;
+using System.Collections.Generic;
+
+namespace FinanceApp
 {
-    public decimal AnnualPay { get; set; }
-    public decimal MonthlyBudget { get; set; }
-    public Dictionary<string, decimal> CategoryBudgets { get; set; } = new();
-
-    public decimal GetMonthlyBudget()
+    public class Budget
     {
-        if (AnnualPay > 0)
-            return AnnualPay / 12;
-        return MonthlyBudget;
-    }
+        public decimal AnnualPay { get; set; }      // annually
+        public decimal MonthlyBudget { get; set; }  // monthly
 
-    public void SetCategoryBudget(string category, decimal amount)
-    {
-        CategoryBudgets[category] = amount;
-    }
+        // budget per category
+        public Dictionary<string, decimal> MonthlyCategoryBudgets { get; private set; } = new();
+        public Dictionary<string, decimal> YearlyCategoryBudgets { get; private set; } = new();
 
-    public decimal GetCategoryBudget(string category)
-    {
-        return CategoryBudgets.ContainsKey(category) ? CategoryBudgets[category] : 0;
+        /// gets the monthly budget
+        /// fromAnnual = true > AnnualPay / 12
+        /// false > MonthlyBudget
+        public decimal GetMonthlyBudget(bool fromAnnual = true)
+        {
+            if (fromAnnual && AnnualPay > 0)
+                return AnnualPay / 12;
+            return MonthlyBudget;
+        }
+
+        /// sets the category budget for month
+        public void SetMonthlyCategoryBudget(string category, decimal amount)
+        {
+            MonthlyCategoryBudgets[category] = amount;
+        }
+
+        /// set the category budget for year
+        public void SetYearlyCategoryBudget(string category, decimal amount)
+        {
+            YearlyCategoryBudgets[category] = amount;
+        }
+
+        /// gets the category budget for month
+        public decimal GetMonthlyCategoryBudget(string category)
+        {
+            if (MonthlyCategoryBudgets.TryGetValue(category, out var amount))
+            {
+                return amount;
+            }
+            return 0;
+        }
+
+        /// gets the category budget for year
+        public decimal GetYearlyCategoryBudget(string category)
+        {
+            if (YearlyCategoryBudgets.TryGetValue(category, out var amount))
+            {
+                return amount;
+            }
+            return 0;
+        }
+
+        public override string ToString()
+        {
+            return $"Annual Pay: {AnnualPay:C}, Monthly Budget: {MonthlyBudget:C}, " +
+                   $"Categories (Monthly: {MonthlyCategoryBudgets.Count}, Yearly: {YearlyCategoryBudgets.Count})";
+        }
     }
 }
