@@ -1,113 +1,170 @@
 @page "/AddTransaction/{Username}"
 <link href="Styles/AddTransaction.css" rel="stylesheet" />
 <style>
-  /* AddTransaction page styles — always dark, palette-driven, no gradients */
-  :root {
-    --p1: #402E7A;
-    --p2: #4C3BCF;
-    --p3: #4B70F5;
-    --accent: #3DC2EC;
-    --bg: #070712;
-    --card-bg: #0F1024;
-    --text: #E9F2FF;
-    --muted: #AEB8E8;
-    --radius: 12px;
-    --input-border: rgba(255,255,255,0.04);
-  }
+    :root {
+        --p1: #402E7A;
+        --p2: #4C3BCF;
+        --p3: #4B70F5;
+        --accent: #3DC2EC;
+        --bg: #070712;
+        --card-bg: #0F1024;
+        --text: #E9F2FF;
+        --muted: #AEB8E8;
+        --radius: 12px;
+        --input-border: rgba(255, 255, 255, 0.04);
+    }
 
-  html, body {
-    height: 100%;
-    margin: 0;
-    background-color: var(--bg);
-    color: var(--text);
-    font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-    -webkit-font-smoothing:antialiased;
-    -moz-osx-font-smoothing:grayscale;
-  }
+    html,
+    body {
+        height: 100%;
+        margin: 0;
+        background-color: var(--bg);
+        color: var(--text);
+        font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
 
-  /* Page container */
-  #AddTransactionDiv {
-    max-width: 760px;
-    margin: 48px auto;
-    display:flex;
-    flex-direction:column;
-    gap:18px;
-    align-items:stretch;
-    padding: 8px;
-  }
+    header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        max-width: 980px;
+        margin: 18px auto 0;
+        padding: 8px 12px;
+    }
 
-  /* Field card */
-  .addTransactionFieldDiv {
-    background-color: var(--card-bg);
-    border: 1px solid rgba(76,59,207,0.12);
-    border-left: 6px solid var(--p1);
-    padding:14px;
-    border-radius: var(--radius);
-    display:flex;
-    flex-direction:column;
-    gap:8px;
-  }
+    header h1 {
+        margin: 0;
+        font-size: 1.1rem;
+        font-weight: 800;
+        color: var(--text);
+    }
 
-  .addTransactionFieldDiv label {
-    font-weight:700;
-    color: var(--p2);
-    font-size:0.95rem;
-  }
+    header nav {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
 
-  .addTransactionFieldDiv input[type="text"],
-  .addTransactionFieldDiv input[type="number"],
-  .addTransactionFieldDiv input[type="date"],
-  .addTransactionFieldDiv select,
-  .addTransactionFieldDiv textarea {
-    border: 1px solid var(--input-border);
-    background-color: transparent;
-    padding:10px 12px;
-    border-radius:8px;
-    outline:none;
-    color: var(--text);
-    font-size:0.95rem;
-  }
+    header nav a {
+        color: var(--muted);
+        text-decoration: none;
+        padding: 8px 12px;
+        border-radius: 8px;
+        transition: background .12s ease, color .12s ease, transform .08s ease;
+        border: 1px solid transparent;
+        font-weight: 700;
+        display: inline-block;
+    }
 
-  .addTransactionFieldDiv input:focus,
-  .addTransactionFieldDiv select:focus,
-  .addTransactionFieldDiv textarea:focus{
-    box-shadow: 0 6px 18px rgba(76,59,207,0.12);
-    border-color: var(--p3);
-  }
+    header nav a:hover {
+        background: rgba(76, 59, 207, 0.07);
+        color: var(--text);
+        border-color: rgba(76, 59, 207, 0.12);
+        transform: translateY(-1px);
+    }
 
-  /* Buttons row */
-  #AddSaveTransactionButtons{
-    display:flex;
-    gap:8px;
-    justify-content:flex-end;
-    align-items:center;
-  }
+    header nav a.active,
+    header nav a[aria-current="page"] {
+        background: linear-gradient(90deg, var(--p2), var(--p3));
+        color: white;
+        box-shadow: 0 8px 30px rgba(76, 59, 207, 0.12);
+    }
 
-  #AddSaveTransactionButtons button{
-    padding:10px 14px;
-    border-radius:10px;
-    border:none;
-    background-color: var(--p3);
-    color: white;
-    font-weight:700;
-    cursor:pointer;
-  }
+    #BudgetContainer {
+        max-width: 980px;
+        margin: 28px auto;
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+        padding: 12px;
+    }
 
-  /* secondary */
-  #AddSaveTransactionButtons button[role="cancel"],
-  #AddSaveTransactionButtons button[type="button"] {
-    background-color: transparent;
-    border: 1px solid rgba(255,255,255,0.04);
-    color: var(--muted);
-  }
 
-  /* error */
-  #AddTransactionErrorMessage{
-    color: #FF6B6B;
-    font-weight:700;
-    margin-left:8px;
-  }
+    header,
+    nav {
+        z-index: 90;
+        position: relative;
+    }
 
+    #AddTransactionDiv {
+        max-width: 760px;
+        margin: 48px auto;
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+        align-items: stretch;
+        padding: 8px;
+    }
+
+    .addTransactionFieldDiv {
+        background-color: var(--card-bg);
+        border: 1px solid rgba(76, 59, 207, 0.12);
+        border-left: 6px solid var(--p1);
+        padding: 14px;
+        border-radius: var(--radius);
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .addTransactionFieldDiv label {
+        font-weight: 700;
+        color: var(--p2);
+        font-size: 0.95rem;
+    }
+
+    .addTransactionFieldDiv input[type="text"],
+    .addTransactionFieldDiv input[type="number"],
+    .addTransactionFieldDiv input[type="date"],
+    .addTransactionFieldDiv select,
+    .addTransactionFieldDiv textarea {
+        border: 1px solid var(--input-border);
+        background-color: transparent;
+        padding: 10px 12px;
+        border-radius: 8px;
+        outline: none;
+        color: var(--text);
+        font-size: 0.95rem;
+    }
+
+    .addTransactionFieldDiv input:focus,
+    .addTransactionFieldDiv select:focus,
+    .addTransactionFieldDiv textarea:focus {
+        box-shadow: 0 6px 18px rgba(76, 59, 207, 0.12);
+        border-color: var(--p3);
+    }
+
+    #AddSaveTransactionButtons {
+        display: flex;
+        gap: 8px;
+        justify-content: flex-end;
+        align-items: center;
+    }
+
+    #AddSaveTransactionButtons button {
+        padding: 10px 14px;
+        border-radius: 10px;
+        border: none;
+        background-color: var(--p3);
+        color: white;
+        font-weight: 700;
+        cursor: pointer;
+    }
+
+    #AddSaveTransactionButtons button[role="cancel"],
+    #AddSaveTransactionButtons button[type="button"] {
+        background-color: transparent;
+        border: 1px solid rgba(255, 255, 255, 0.04);
+        color: var(--muted);
+    }
+
+    #AddTransactionErrorMessage {
+        color: #FF6B6B;
+        font-weight: 700;
+        margin-left: 8px;
+    }
 </style>
 
 @inject NavigationManager navManager
@@ -123,7 +180,7 @@
 </header>
 
 <body>
-    <h1>@(Id == Guid.Empty? "Add A new Transaction" : "Edit Transaction")</h1>
+    <h1>@(Id == Guid.Empty ? "Add A new Transaction" : "Edit Transaction")</h1>
     <div id="AddTransactionDiv">
         <div class="addTransactionFieldDiv">
             <label for="Name">Transaction Name:</label>
@@ -135,7 +192,7 @@
         </div>
         <div class="addTransactionFieldDiv">
             <label for="Date">Date:</label>
-            <input type="date"id="Date" @bind="CurrentTransaction.Date" readonly/>
+            <input type="date" id="Date" @bind="CurrentTransaction.Date" readonly />
         </div>
         <div class="addTransactionFieldDiv">
             <label for="Category">Category:</label>
@@ -156,7 +213,7 @@
 
         <div id="AddSaveTransactionButtons">
             <button @onclick="AddSaveTransaction">@(Id == Guid.Empty ? "Add Transaction" : "Save Changes")</button>
-            @if(Id != Guid.Empty)
+            @if (Id != Guid.Empty)
             {
                 <button @onclick="DeleteTransaction">Delete Transaction</button>
             }
@@ -174,20 +231,23 @@
     private Transaction CurrentTransaction;
     private string erroMessage;
     public static SQLTransactionData TransactionDataManager = new SQLTransactionData();
-    Dictionary<Guid, (string Owner, string Name, decimal Amount, DateTime Date, string Category, string Notes)>? TransactionDB;
-     public TransactionBook transactionBook = new TransactionBook();
+    Dictionary<Guid, (string Owner, string Name, decimal Amount, DateTime Date, string Category, string Notes)>?
+    TransactionDB;
+    public TransactionBook transactionBook = new TransactionBook();
 
     protected override void OnInitialized()
     {
         TransactionDB = TransactionDataManager.GetTransactionByUser(Username);
         foreach (var transaction in TransactionDB)
         {
-            transactionBook.AddTransaction(new Transaction(transaction.Key, transaction.Value.Owner, transaction.Value.Name, transaction.Value.Amount, transaction.Value.Date, transaction.Value.Category, transaction.Value.Notes));
+            transactionBook.AddTransaction(new Transaction(transaction.Key, transaction.Value.Owner, transaction.Value.Name,
+            transaction.Value.Amount, transaction.Value.Date, transaction.Value.Category, transaction.Value.Notes));
         }
         if (Id != Guid.Empty)
         {
             var transactionData = TransactionDB[Id];
-            CurrentTransaction = new Transaction(Id, transactionData.Owner, transactionData.Name, transactionData.Amount, transactionData.Date, transactionData.Category, transactionData.Notes);
+            CurrentTransaction = new Transaction(Id, transactionData.Owner, transactionData.Name, transactionData.Amount,
+            transactionData.Date, transactionData.Category, transactionData.Notes);
         }
         else
         {
@@ -207,16 +267,16 @@
             erroMessage = "Please fill out all required fields";
         }
         else
-        {  
-            if(Id==Guid.Empty)
+        {
+            if (Id == Guid.Empty)
             {
                 transactionBook.AddTransaction(CurrentTransaction);
             }
             else
             {
-                
+
                 int transactionIndexOnBook = transactionBook.ListTransactions().FindIndex(t => t.TransactionId == Id);
-                foreach(Transaction t in transactionBook.ListTransactions())
+                foreach (Transaction t in transactionBook.ListTransactions())
                 {
                     Console.WriteLine("Transaction in Book:");
                     Console.WriteLine(t.TransactionId);
@@ -224,7 +284,8 @@
                 transactionBook.UpdateTransaction(transactionIndexOnBook, CurrentTransaction);
             }
 
-            TransactionDataManager.SaveTransactionData(transactionBook.ListTransactions().ToDictionary(t => t.TransactionId, t => (t.TransactionOwner, t.Name, t.Amount, t.Date, t.Category, t.Notes)));
+            TransactionDataManager.SaveTransactionData(transactionBook.ListTransactions().ToDictionary(t => t.TransactionId, t =>
+            (t.TransactionOwner, t.Name, t.Amount, t.Date, t.Category, t.Notes)));
             navManager.NavigateTo($"/Home/{Username}");
         }
     }

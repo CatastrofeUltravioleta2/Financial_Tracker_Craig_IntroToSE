@@ -2,6 +2,286 @@
 <link href="Styles/BudgetManager.css" rel="stylesheet" />
 @inject NavigationManager navManager
 
+<style>
+    :root {
+        --p1: #402E7A;
+        --p2: #4C3BCF;
+        --p3: #4B70F5;
+        --accent: #3DC2EC;
+        --bg: #070712;
+        --card-bg: #0D1230;
+        --text: #EAF4FF;
+        --muted: #B8C7F5;
+        --danger: #FF6B6B;
+        --radius: 12px;
+        --input-border: rgba(255, 255, 255, 0.04);
+    }
+
+    *,
+    *::before,
+    *::after {
+        box-sizing: border-box;
+    }
+
+    html,
+    body {
+        height: 100%;
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+
+    header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        max-width: 980px;
+        margin: 18px auto 0;
+        padding: 8px 12px;
+    }
+
+    header h1 {
+        margin: 0;
+        font-size: 1.1rem;
+        font-weight: 800;
+        color: var(--text);
+    }
+
+    header nav {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+
+    header nav a {
+        color: var(--muted);
+        text-decoration: none;
+        padding: 8px 12px;
+        border-radius: 8px;
+        transition: background .12s ease, color .12s ease, transform .08s ease;
+        border: 1px solid transparent;
+        font-weight: 700;
+        display: inline-block;
+    }
+
+    header nav a:hover {
+        background: rgba(76, 59, 207, 0.07);
+        color: var(--text);
+        border-color: rgba(76, 59, 207, 0.12);
+        transform: translateY(-1px);
+    }
+
+    header nav a.active,
+    header nav a[aria-current="page"] {
+        background: linear-gradient(90deg, var(--p2), var(--p3));
+        color: white;
+        box-shadow: 0 8px 30px rgba(76, 59, 207, 0.12);
+    }
+
+    #BudgetContainer {
+        max-width: 980px;
+        margin: 28px auto;
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+        padding: 12px;
+    }
+
+
+    header,
+    nav {
+        z-index: 90;
+        position: relative;
+    }
+
+    #BudgetContainer {
+        max-width: 980px;
+        margin: 28px auto;
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+        padding: 12px;
+    }
+
+    #MainBudgetSetupDiv {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        background: var(--card-bg);
+        border-radius: var(--radius);
+        padding: 16px;
+        border: 1px solid rgba(76, 59, 207, 0.10);
+        width: 100%;
+    }
+
+    .field {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        width: 100%;
+    }
+
+    .field label {
+        color: var(--p2);
+        font-weight: 700;
+    }
+
+    .field input[type="number"],
+    .field input[type="date"],
+    .field select {
+        width: 100%;
+        padding: 10px;
+        border-radius: 10px;
+        border: 1px solid var(--input-border);
+        background: transparent;
+        color: var(--text);
+        font-size: 0.96rem;
+    }
+
+    .actions {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        justify-content: flex-start;
+        margin-top: 6px;
+    }
+
+    .actions button {
+        padding: 10px 14px;
+        border-radius: 10px;
+        border: none;
+        background: var(--p2);
+        color: white;
+        font-weight: 700;
+        cursor: pointer;
+    }
+
+
+    .MainBudgetinfo {
+        width: 100%;
+        background: var(--card-bg);
+        border-radius: 10px;
+        padding: 14px;
+        border: 1px solid rgba(75, 112, 245, 0.06);
+    }
+
+    .MainBudgetinfo p {
+        margin: 6px 0;
+    }
+
+    #SubBudgetsDiv {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        margin-top: 6px;
+    }
+
+    #SubbudgetCards {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        width: 100%;
+    }
+
+    .SubbudgetCard {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        padding: 12px;
+        border-radius: 10px;
+        background: var(--card-bg);
+        border: 1px solid rgba(60, 194, 236, 0.06);
+    }
+
+    .SubbudgetCard .left,
+    .SubbudgetCard .right {
+        width: 100%;
+        display: block;
+    }
+
+    .SubbudgetCard input[type="number"],
+    .SubbudgetCard input[type="text"],
+    .SubbudgetCard select {
+        width: 100%;
+        padding: 10px;
+        border-radius: 8px;
+        border: 1px solid var(--input-border);
+        background: transparent;
+        color: var(--text);
+    }
+
+    .SubbudgetCard .metrics {
+        display: flex;
+        flex-direction: row;
+        gap: 12px;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+
+    .SubbudgetCard .metrics p {
+        margin: 0;
+        font-size: 0.95rem;
+        color: var(--muted);
+    }
+
+    .SubbudgetCard .svg {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .warn {
+        color: var(--danger);
+        font-weight: 800;
+    }
+
+    .good {
+        color: #5CE5A1;
+        font-weight: 700;
+    }
+
+    .error {
+        color: var(--danger);
+        font-weight: 800;
+    }
+
+    .footer-actions {
+        display: flex;
+        gap: 10px;
+        justify-content: flex-start;
+        margin-top: 6px;
+    }
+
+      .footer-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-start;
+      margin-top: 6px;
+  }
+
+  .footer-actions button,
+  #SetUpSubBudgets {
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: none;
+      background: var(--p3);
+      color: white;
+      font-weight: 700;
+      cursor: pointer;
+  }
+    header,
+    nav {
+        z-index: 90;
+        position: relative;
+    }
+</style>
+
 
 <PageTitle>Budgets</PageTitle>
 

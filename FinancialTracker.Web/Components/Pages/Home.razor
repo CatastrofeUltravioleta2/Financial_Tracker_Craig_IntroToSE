@@ -2,7 +2,6 @@
 @inject NavigationManager navManager
 
 <style>
-  /* Home page styles — always dark */
   :root{
     --p1:#402E7A;
     --p2:#4C3BCF;
@@ -13,11 +12,65 @@
     --text:#EAF4FF;
     --muted:#B9C8F6;
     --radius:12px;
-    --input-border: rgba(255,255,255,0.12); /* increased visibility */
+    --input-border: rgba(255,255,255,0.12);
   }
 
   html, body { height:100%; margin:0; background-color:var(--bg); color:var(--text); font-family:Inter,system-ui; }
 
+  header {
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    max-width: 980px;
+    margin: 18px auto 0;
+    padding: 8px 12px;
+  }
+  header h1 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: var(--text);
+  }
+  header nav {
+    display:flex;
+    gap:10px;
+    align-items:center;
+  }
+  header nav a {
+    color: var(--muted);
+    text-decoration: none;
+    padding: 8px 12px;
+    border-radius: 8px;
+    transition: background .12s ease, color .12s ease, transform .08s ease;
+    border: 1px solid transparent;
+    font-weight: 700;
+    display: inline-block;
+  }
+  header nav a:hover {
+    background: rgba(76,59,207,0.07);
+    color: var(--text);
+    border-color: rgba(76,59,207,0.12);
+    transform: translateY(-1px);
+  }
+
+  header nav a.active,
+  header nav a[aria-current="page"] {
+    background: linear-gradient(90deg, var(--p2), var(--p3));
+    color: white;
+    box-shadow: 0 8px 30px rgba(76,59,207,0.12);
+  }
+
+  #BudgetContainer {
+    max-width: 980px;
+    margin: 28px auto;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    padding: 12px;
+  }
+
+
+  header, nav { z-index: 90; position: relative; }
   #TransactionMainPage {
     max-width:1100px;
     margin: 28px auto;
@@ -47,7 +100,6 @@
     min-width:160px;
   }
 
-  /* Make inputs more visible with clear border */
   #TransactionFilterDiv input[type="date"],
   #TransactionFilterDiv input[type="text"],
   #TransactionFilterDiv input[type="number"],
@@ -62,13 +114,11 @@
     appearance: none;
   }
 
-  /* Style the select dropdown options to match dark theme */
   #TransactionFilterDiv select option {
     background: var(--card-bg);
     color: var(--text);
   }
 
-  /* Improve focus state */
   #TransactionFilterDiv input:focus, #TransactionFilterDiv select:focus {
     outline: none;
     box-shadow: 0 0 0 3px rgba(76,59,207,0.06);
