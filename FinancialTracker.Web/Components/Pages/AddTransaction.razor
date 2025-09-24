@@ -12,7 +12,7 @@
 </header>
 
 <body>
-    <h1>@(Id == 0 ? "Add A new Transaction" : "Edit Transaction")</h1>
+    <h1>@(Id == Guid.Empty? "Add A new Transaction" : "Edit Transaction")</h1>
     <div id="AddTransactionDiv">
         <div class="addTransactionFieldDiv">
             <label for="Name">Transaction Name:</label>
@@ -28,7 +28,15 @@
         </div>
         <div class="addTransactionFieldDiv">
             <label for="Category">Category:</label>
-            <input id="Category" @bind="CurrentTransaction.Category" />
+            <select id="Category" @bind="CurrentTransaction.Category">
+                <option value="" hidden></option>
+                <option value="Housing">Housing And Utilities</option>
+                <option value="Food">Food</option>
+                <option value="Transportation">Transportation</option>
+                <option value="Entertainment">Entertainment</option>
+                <option value="Bills">Bills and Financial</option>
+                <option value="Miscellaneous">Miscellaneous</option>
+            </select>
         </div>
         <div class="addTransactionFieldDiv">
             <label for="Notes">Notes:</label>
@@ -36,7 +44,11 @@
         </div>
 
         <div id="AddSaveTransactionButtons">
-            <button @onclick="AddSaveTransaction">@(Id == 0 ? "Add Transaction" : "Save Changes")</button>
+            <button @onclick="AddSaveTransaction">@(Id == Guid.Empty ? "Add Transaction" : "Save Changes")</button>
+            @if(Id != Guid.Empty)
+            {
+                <button @onclick="DeleteTransaction">Delete Transaction</button>
+            }
             <button @onclick="CancelAddTransaction">Cancel</button>
             <p id="AddTransactionErrorMessage">@erroMessage</p>
         </div>
@@ -47,25 +59,30 @@
     [Parameter]
     public string Username { get; set; }
     [SupplyParameterFromQuery]
-    public int Id { get; set; }
+    public Guid Id { get; set; }
     private Transaction CurrentTransaction;
     private string erroMessage;
     public static SQLTransactionData TransactionDataManager = new SQLTransactionData();
-    Dictionary<int, (string, string, decimal, DateTime, string, string)>? AllTransactions;
+    Dictionary<Guid, (string Owner, string Name, decimal Amount, DateTime Date, string Category, string Notes)>? TransactionDB;
+     public TransactionBook transactionBook = new TransactionBook();
+
     protected override void OnInitialized()
     {
-        AllTransactions = TransactionDataManager.GetTransactionByUser(Username);
-        if (Id != 0)
+        TransactionDB = TransactionDataManager.GetTransactionByUser(Username);
+        foreach (var transaction in TransactionDB)
         {
-            var transactionData = AllTransactions[Id];
-            CurrentTransaction = Transaction.Create(transactionData.Item2, transactionData.Item3, transactionData.Item4,
-            transactionData.Item5, transactionData.Item6);
+            transactionBook.AddTransaction(new Transaction(transaction.Key, transaction.Value.Owner, transaction.Value.Name, transaction.Value.Amount, transaction.Value.Date, transaction.Value.Category, transaction.Value.Notes));
+        }
+        if (Id != Guid.Empty)
+        {
+            var transactionData = TransactionDB[Id];
+            CurrentTransaction = new Transaction(Id, transactionData.Owner, transactionData.Name, transactionData.Amount, transactionData.Date, transactionData.Category, transactionData.Notes);
         }
         else
         {
-            CurrentTransaction = Transaction.Create("", 0, DateTime.Now, "", "");
+            CurrentTransaction = new Transaction(Guid.NewGuid(), Username, "", 0, DateTime.Now, "", "");
+            Console.WriteLine(CurrentTransaction.TransactionId);
         }
-
     }
     private void CancelAddTransaction()
     {
@@ -80,19 +97,34 @@
         }
         else
         {  
-            if(Id==0)
+            if(Id==Guid.Empty)
             {
-                int highestId = AllTransactions.Count == 0? 1 : AllTransactions.Keys.Max();
-                AllTransactions[highestId+1] = (Username, CurrentTransaction.Name, CurrentTransaction.Amount, CurrentTransaction.Date,
-                CurrentTransaction.Category, CurrentTransaction.Notes);
+                transactionBook.AddTransaction(CurrentTransaction);
             }
             else
             {
-                AllTransactions[Id] = (Username, CurrentTransaction.Name, CurrentTransaction.Amount, CurrentTransaction.Date,
-                CurrentTransaction.Category, CurrentTransaction.Notes);
+                
+                int transactionIndexOnBook = transactionBook.ListTransactions().FindIndex(t => t.TransactionId == Id);
+                foreach(Transaction t in transactionBook.ListTransactions())
+                {
+                    Console.WriteLine("Transaction in Book:");
+                    Console.WriteLine(t.TransactionId);
+                }
+                transactionBook.UpdateTransaction(transactionIndexOnBook, CurrentTransaction);
             }
-            TransactionDataManager.SaveTransactionData(AllTransactions);
+
+            TransactionDataManager.SaveTransactionData(transactionBook.ListTransactions().ToDictionary(t => t.TransactionId, t => (t.TransactionOwner, t.Name, t.Amount, t.Date, t.Category, t.Notes)));
             navManager.NavigateTo($"/Home/{Username}");
         }
+    }
+    private void DeleteTransaction()
+    {
+        if (Id != Guid.Empty)
+        {
+            int transactionIndexOnBook = transactionBook.ListTransactions().FindIndex(t => t.TransactionId == Id);
+            transactionBook.RemoveTransaction(transactionIndexOnBook);
+            TransactionDataManager.DeleteTransaction(Id);
+        }
+        navManager.NavigateTo($"/Home/{Username}");
     }
 }

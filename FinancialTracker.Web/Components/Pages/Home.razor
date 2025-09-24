@@ -1,13 +1,12 @@
 ﻿@page "/Home/{Username}"
-@using System.Transactions
 @inject NavigationManager navManager
 
 <PageTitle>Home</PageTitle>
 <header>
     <h1>Personal Financial Tracker</h1>
     <nav>
-        <a href="">Home</a>
-        <a href="">Budget</a>
+        <a href="@($"/Home/{Username}")">Home</a>
+        <a href="@($"/BudgetManager/{Username}")">Budget</a>
         <a href="">Summary/Comparison</a>
     </nav>
 </header>
@@ -17,24 +16,55 @@
         <h2>Welcome to the Personal Financial Tracker</h2>
         <p>This application helps you manage your personal finances by tracking your income, expenses, and budgets.</p>
     </div>
+    <div id="TransactionFilterDiv">
+        <div id="FilterByCategoryDiv">
+            <label for="FilterByCategory">Filter by Category:</label>
+            <select @bind="FilterCriteria.Category" id="FilterByCategory">
+                <option value="Housing">Housing And Utilities</option>
+                <option value="Food">Food</option>
+                <option value="Transportation">Transportation</option>
+                <option value="Entertainment">Entertainment</option>
+                <option value="Bills">Bills and Financial</option>
+                <option value="Income">Income</option>
+            </select>
+        </div>
+        <div id="FilterByDateDiv">
+            <label for="FilterByDate">Filter by Date:</label>
+            <input @bind="FilterCriteria.Date" type="date" id="FilterByDate" />
+        </div>
+        <div id="FilterByNameDiv">
+            <label for="FilterByName">Filter by Name:</label>
+            <input @bind="FilterCriteria.Name" type="text" id="FilterByName" />
+        </div>
+        <div id="FilterByAmountDiv">
+            <label for="FilterByAmount">Filter by Range</label>
+            <input @bind="FilterCriteria.AmountLow" type="number" id="FilterByAmountLow" step="0.01" />
+            <input @bind="FilterCriteria.AmountHigh" type="number" id="FilterByAmountHigh" step="0.01" />
+        </div>
+        <div>
+            <button @onclick="ApplyFilters" id="ApplyFiltersButton">Apply Filters</button>
+            <button @onclick="ClearFilters" id="ClearFiltersButton">Clear Filters</button>
+        </div>
+    </div>
     <div id="TransactionDiv">
-        @if (CurrentUserTransactions.Count == 0)
+        @if (transactionBook.ListTransactions().Count == 0)
         {
             <p>No transactions found. Please add a transaction.</p>
         }
         else
         {
             <h2>@Username Transactions</h2>
-            @foreach (KeyValuePair<int, (string, string, decimal, DateTime, string, string)> transaction in CurrentUserTransactions)
+            @foreach (var transaction in DisplayedTransactions)
             {
-                <div @onclick="() => EditTransaction(transaction.Key)" class="TransactionCard">
-                    <h3>@transaction.Value.Item2</h3>
-                    <p>Amount: @transaction.Value.Item3.ToString("C")</p>
-                    <p>Date: @transaction.Value.Item4.ToShortDateString()</p>
-                    <p>Category: @transaction.Value.Item5</p>
-                    <p>Notes: @transaction.Value.Item6</p>
+                <div @onclick="() => EditTransaction(transaction.TransactionId)" class="TransactionCard">
+                    <h3>@transaction.Name</h3>
+                    <p>Amount: @transaction.Amount.ToString("C")</p>
+                    <p>Date: @transaction.Date.ToShortDateString()</p>
+                    <p>Category: @transaction.Category</p>
+                    <p>Notes: @transaction.Notes</p>
                 </div>
             }
+            <h2 id="TotalAmount">Total Amount: @transactionBook.TotalAmount</h2>
         }
         <button @onclick="AddTransaction">AddTransaction</button>
     </div>
@@ -43,25 +73,51 @@
 @code {
     [Parameter]
     public string Username { get; set; }
-    public Dictionary<int, (string, string, decimal, DateTime, string, string)> CurrentUserTransactions = new
-    Dictionary<int, (string, string, decimal, DateTime, string, string)>();
+    public Dictionary<Guid, (string Owner, string Name, decimal Amount, DateTime Date, string Category, string Notes)>
+    TransactionDB = new();
     public static SQLTransactionData TransactionDataManager = new SQLTransactionData();
+    public TransactionBook transactionBook = new TransactionBook();
+    public List<Transaction> DisplayedTransactions = new List<Transaction>();
+
+    public (string Category, DateTime? Date, string Name, decimal? AmountLow, decimal? AmountHigh) FilterCriteria = ("", null, "", null, null);
     protected override void OnInitialized()
     {
         if (string.IsNullOrEmpty(Username))
         {
             navManager.NavigateTo("/");
         }
-        CurrentUserTransactions = TransactionDataManager.GetTransactionByUser(Username);
+        TransactionDB = TransactionDataManager.GetTransactionByUser(Username);
+        foreach (var transaction in TransactionDB)
+        {
+            transactionBook.AddTransaction(new Transaction(transaction.Key, transaction.Value.Owner, transaction.Value.Name,
+            transaction.Value.Amount, transaction.Value.Date, transaction.Value.Category, transaction.Value.Notes));
+            DisplayedTransactions = transactionBook.ListTransactions();
+        }
     }
 
     private void AddTransaction()
     {
-        navManager.NavigateTo($"/AddTransaction/{Username}/?Id=0");
+        navManager.NavigateTo($"/AddTransaction/{Username}/?Id={Guid.Empty}");
     }
 
-    private void EditTransaction(int TransactionId)
+    private void EditTransaction(Guid TransactionId)
     {
         navManager.NavigateTo($"/AddTransaction/{Username}/?Id={TransactionId}");
+    }
+    private void ClearFilters()
+    {
+        FilterCriteria = ("", null, "", null, null);
+        DisplayedTransactions = transactionBook.ListTransactions();
+    }
+    private void ApplyFilters()
+    {
+        DisplayedTransactions = transactionBook.ListTransactions().Where(t =>
+        (string.IsNullOrEmpty(FilterCriteria.Category) || t.Category == FilterCriteria.Category) &&
+        (!FilterCriteria.Date.HasValue || t.Date.Date == FilterCriteria.Date.Value.Date) &&
+        (string.IsNullOrEmpty(FilterCriteria.Name) || t.Name.Contains(FilterCriteria.Name, StringComparison.OrdinalIgnoreCase)) &&
+        (!FilterCriteria.AmountLow.HasValue || t.Amount >= FilterCriteria.AmountLow.Value) &&
+        (!FilterCriteria.AmountHigh.HasValue || t.Amount <= FilterCriteria.AmountHigh.Value)
+        ).ToList();
+        StateHasChanged();
     }
 }

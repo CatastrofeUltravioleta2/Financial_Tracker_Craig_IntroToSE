@@ -1,0 +1,415 @@
+@page "/BudgetManager/{Username}"
+@inject NavigationManager navManager
+
+<PageTitle>Budgets</PageTitle>
+
+<header>
+    <h1>Personal Financial Tracker</h1>
+    <nav>
+        <a href="@($"/Home/{Username}")">Home</a>
+        <a href="@($"/BudgetManager/{Username}")">Budget</a>
+        <a href="">Summary/Comparison</a>
+    </nav>
+</header>
+
+<body>
+    <h1>Budgets</h1>
+    <div id="BudgetContainer">
+        @* <div id="SelectBudgetModeDiv">
+            <h2>Select Budget Setup</h2>
+            <div>
+                <label>
+                    <input type="radio" @bind="CurrentBudget.Mode" name='BudgetMode' /> Monthly
+                </label>
+                <label>
+                    <input type="radio" @bind="CurrentBudget.Mode" name='BudgetMode' /> Yearly
+                </label>
+                <label>
+                    <input type="radio" @bind="CurrentBudget.Mode" name='BudgetMode' /> Custom
+                </label>
+            </div>
+        </div> *@
+        <div id="MainBudgetSetupDiv">
+
+            <div class="field">
+                <label>Declared Income for Period</label>
+                <input type="number" step="0.01" @bind="CurrentBudget.DeclaredIncomeForPeriod" />
+            </div>
+
+            @* @if (CurrentBudget.Mode == BudgetMode.Custom)
+            {
+                <div class="field">
+                    <label>Start Date</label>
+                    <input type="date" @bind="CurrentBudget.PeriodStart" />
+                </div>
+                <div class="field">
+                    <label>End Date</label>
+                    <input type="date" @bind="CurrentBudget.PeriodEnd" />
+                </div>
+            } *@
+
+            <div class="actions">
+                <button @onclick="CreateOrApplyMainBudget">Set Main Budget</button>
+            </div>
+            @if (CurrentBudget.Id != Guid.Empty)
+            {
+                <div class="MainBudgetinfo">
+                    <p>Current Budget Mode: <strong>@CurrentBudget.Mode.ToString()</strong></p>
+                    <p>Owner: @CurrentBudget.Owner</p>
+                    <p>Period: @CurrentBudget.PeriodStart.ToShortDateString() — @CurrentBudget.PeriodEnd.ToShortDateString()
+                        (@CurrentBudget.DaysInPeriod days)</p>
+                    <p>Total Amount: @CurrentBudget.TotalAmount.ToString("C")</p>
+                    <p>Declared Income for Period: @CurrentBudget.DeclaredIncomeForPeriod.ToString("C")</p>
+                    @{
+                        var mainRemaining = CurrentBudget.DeclaredIncomeForPeriod - CurrentBudget.TotalAmount;
+                        var mainPct = CurrentBudget.DeclaredIncomeForPeriod == 0 ? 0 : Math.Round((double)(mainRemaining /
+                        CurrentBudget.DeclaredIncomeForPeriod * 100), 2);
+                    }
+                    <p>Budget Remaining: @mainRemaining.ToString("C") (@mainPct%)</p>
+                </div>
+            }
+
+            <div id="SubBudgetsDiv">
+                <h2>Sub Budgets</h2>
+                <div id="SubbudgetCards">
+                    <div id="HousingBudget" class="SubbudgetCard">
+                        <h3>Housing and Utilities</h3>
+                        @if (CurrentBudget.SubBudgets[0].Id != Guid.Empty)
+                        {
+                            var sb = CurrentBudget.SubBudgets[0];
+                            var sbRemaining = sb.IncomeShare - sb.Amount;
+                            var sbPct = sb.IncomeShare == 0 ? 0 : Math.Round((double)(sbRemaining / sb.IncomeShare * 100),
+                            2);
+                            <p>Amount: @sb.Amount.ToString("C")</p>
+                            <p>Income Assigned to Sub budget: @sb.IncomeShare.ToString("C")</p>
+                            <p>Budget Remaining: @sbRemaining.ToString("C") (@sbPct%)</p>
+                            <p>Transactions in this Sub budget: @transactionBook.ListTransactions().Where(t => t.Category ==
+                                                            "Housing").Count()</p>
+                                                }
+                        <input type="number" step="0.01" id="AddIncomeForHousingBudget"
+                            placeholder="Assign Income to subbudget" @bind="CurrentBudget.SubBudgets[0].IncomeShare" />
+                    </div>
+                    <div id="FoodBudget" class="SubbudgetCard">
+                        <h3>Food and Groceries</h3>
+                        @if (CurrentBudget.SubBudgets[1].Id != Guid.Empty)
+                        {
+                            var sb = CurrentBudget.SubBudgets[1];
+                            var sbRemaining = sb.IncomeShare - sb.Amount;
+                            var sbPct = sb.IncomeShare == 0 ? 0 : Math.Round((double)(sbRemaining / sb.IncomeShare * 100),
+                            2);
+                            <p>Amount: @sb.Amount.ToString("C")</p>
+                            <p>Income Assigned to Sub budget: @sb.IncomeShare.ToString("C")</p>
+                            <p>Budget Remaining: @sbRemaining.ToString("C") (@sbPct%)</p>
+                            <p>Transactions in this Sub budget: @transactionBook.ListTransactions().Where(t => t.Category ==
+                                                            "Food").Count()</p>
+                                                }
+                        <input type="number" step="0.01" id="AddIncomeForFoodBudget"
+                            placeholder="Assign Income to subbudget" @bind="CurrentBudget.SubBudgets[1].IncomeShare" />
+                    </div>
+                    <div id="TransportationBudget" class="SubbudgetCard">
+                        <h3>Transportation</h3>
+                        @if (CurrentBudget.SubBudgets[2].Id != Guid.Empty)
+                        {
+                            var sb = CurrentBudget.SubBudgets[2];
+                            var sbRemaining = sb.IncomeShare - sb.Amount;
+                            var sbPct = sb.IncomeShare == 0 ? 0 : Math.Round((double)(sbRemaining / sb.IncomeShare * 100),
+                            2);
+                            <p>Amount: @sb.Amount.ToString("C")</p>
+                            <p>Income Assigned to Sub budget: @sb.IncomeShare.ToString("C")</p>
+                            <p>Budget Remaining: @sbRemaining.ToString("C") (@sbPct%)</p>
+                            <p>Transactions in this Sub budget: @transactionBook.ListTransactions().Where(t => t.Category ==
+                                                            "Transportation").Count()</p>
+                                                }
+                        <input type="number" step="0.01" id="AddIncomeForTransportationBudget"
+                            placeholder="Assign Income to subbudget" @bind="CurrentBudget.SubBudgets[2].IncomeShare" />
+                    </div>
+                    <div id="EntertainmentBudget" class="SubbudgetCard">
+                        <h3>Entertainment</h3>
+                        @if (CurrentBudget.SubBudgets[3].Id != Guid.Empty)
+                        {
+                            var sb = CurrentBudget.SubBudgets[3];
+                            var sbRemaining = sb.IncomeShare - sb.Amount;
+                            var sbPct = sb.IncomeShare == 0 ? 0 : Math.Round((double)(sbRemaining / sb.IncomeShare * 100),
+                            2);
+                            <p>Amount: @sb.Amount.ToString("C")</p>
+                            <p>Income Assigned to Sub budget: @sb.IncomeShare.ToString("C")</p>
+                            <p>Budget Remaining: @sbRemaining.ToString("C") (@sbPct%)</p>
+                            <p>Transactions in this Sub budget: @transactionBook.ListTransactions().Where(t => t.Category ==
+                                                            "Entertainment").Count()</p>
+                                                }
+                        <input type="number" step="0.01" id="AddIncomeForEntertainmentBudget"
+                            placeholder="Assign Income to subbudget" @bind="CurrentBudget.SubBudgets[3].IncomeShare" />
+                    </div>
+                    <div id="BillsBudget" class="SubbudgetCard">
+                        <h3>Bills and Finances</h3>
+                        @if (CurrentBudget.SubBudgets[4].Id != Guid.Empty)
+                        {
+                            var sb = CurrentBudget.SubBudgets[4];
+                            var sbRemaining = sb.IncomeShare - sb.Amount;
+                            var sbPct = sb.IncomeShare == 0 ? 0 : Math.Round((double)(sbRemaining / sb.IncomeShare * 100),
+                            2);
+                            <p>Amount: @sb.Amount.ToString("C")</p>
+                            <p>Income Assigned to Sub budget: @sb.IncomeShare.ToString("C")</p>
+                            <p>Budget Remaining: @sbRemaining.ToString("C") (@sbPct%)</p>
+                            <p>Transactions in this Sub budget: @transactionBook.ListTransactions().Where(t => t.Category ==
+                                                            "Bills").Count()</p>
+                                                }
+                        <input type="number" step="0.01" id="AddIncomeForBillsBudget"
+                            placeholder="Assign Income to subbudget" @bind="CurrentBudget.SubBudgets[4].IncomeShare" />
+                    </div>
+                    <div id="MiscellaneousBudget" class="SubbudgetCard">
+                        <h3>Miscellaneous</h3>
+                        @if (CurrentBudget.SubBudgets[5].Id != Guid.Empty)
+                        {
+                            var sb = CurrentBudget.SubBudgets[5];
+                            var sbRemaining = sb.IncomeShare - sb.Amount;
+                            var sbPct = sb.IncomeShare == 0 ? 0 : Math.Round((double)(sbRemaining / sb.IncomeShare * 100),
+                            2);
+                            <p>Amount: @sb.Amount.ToString("C")</p>
+                            <p>Income Assigned to Sub budget: @sb.IncomeShare.ToString("C")</p>
+                            <p>Budget Remaining: @sbRemaining.ToString("C") (@sbPct%)</p>
+                            <p>Transactions in this Sub budget: @transactionBook.ListTransactions().Where(t => t.Category ==
+                                                            "Miscellaneous").Count()</p>
+                                                }
+                        <input type="number" step="0.01" id="AddIncomeForMiscellaneousBudget"
+                            placeholder="Assign Income to subbudget" @bind="CurrentBudget.SubBudgets[5].IncomeShare" />
+                    </div>
+                </div>
+                <p>@SubBudgetError</p>
+                <button @onclick="SetUpSubBudgets" id="SetUpSubBudgets">Set Up Sub budgets</button>
+            </div>
+
+        </div>
+    </div>
+</body>
+
+
+@code {
+    [Parameter]
+    public string Username { get; set; }
+    public static SQLTransactionData TransactionDataManager = new SQLTransactionData();
+    public static SQLBudgetData BudgetDataManager = new SQLBudgetData();
+    public static SQLSubBudgetData SubBudgetDataManager = new SQLSubBudgetData();
+    private TransactionBook transactionBook = new TransactionBook();
+    Dictionary<Guid, (string Owner, string Name, decimal Amount, DateTime Date, string Category, string Notes)>?
+    TransactionDB;
+    Dictionary<Guid, (string, string, decimal, decimal, DateTime, DateTime)>? UserBudgetDB;
+    Dictionary<Guid, (Guid, string, decimal, decimal)>? UserSubBudgetDB;
+    string SubBudgetError = "";
+
+    private BudgetManagerEdition budgetManager;
+    private Budget CurrentBudget { get; set; } = new Budget();
+    private List<SubBudget> Subbudgets => CurrentBudget?.SubBudgets ?? new List<SubBudget>();
+
+    protected override void OnInitialized()
+    {
+        TransactionDB = TransactionDataManager.GetTransactionByUser(Username);
+        foreach (var transaction in TransactionDB)
+        {
+            transactionBook.AddTransaction(new Transaction(transaction.Key, transaction.Value.Owner, transaction.Value.Name,
+            transaction.Value.Amount, transaction.Value.Date, transaction.Value.Category, transaction.Value.Notes));
+        }
+        UserBudgetDB = BudgetDataManager.GetBudgetByUser(Username);
+        if (UserBudgetDB.Count > 0)
+        {
+            var currentBudgetDB = UserBudgetDB.First();
+            CurrentBudget = new Budget()
+            {
+                Id = currentBudgetDB.Key,
+                Owner = currentBudgetDB.Value.Item1,
+                Mode = Enum.Parse<BudgetMode>(currentBudgetDB.Value.Item2),
+                TotalAmount = currentBudgetDB.Value.Item3,
+                DeclaredIncomeForPeriod = currentBudgetDB.Value.Item4,
+                PeriodStart = currentBudgetDB.Value.Item5,
+                PeriodEnd = currentBudgetDB.Value.Item6,
+                SubBudgets = new List<SubBudget>()
+
+            };
+            UserSubBudgetDB = SubBudgetDataManager.GetSubBudgetByParentId(Guid.Empty);
+            var subBudgetsDB = SubBudgetDataManager.GetSubBudgetByParentId(CurrentBudget.Id);
+            if (subBudgetsDB.Count == 0)
+            {
+                CurrentBudget.SubBudgets.Add(new SubBudget()
+                {
+                    Id = Guid.Empty,
+                    ParentId = CurrentBudget.Id,
+                    Category = "Housing",
+                    Amount = 0,
+                    IncomeShare = 0
+                });
+                CurrentBudget.SubBudgets.Add(new SubBudget()
+                {
+                    Id = Guid.Empty,
+                    ParentId = CurrentBudget.Id,
+                    Category = "Food",
+                    Amount = 0,
+                    IncomeShare = 0
+                });
+                CurrentBudget.SubBudgets.Add(new SubBudget()
+                {
+                    Id = Guid.Empty,
+                    ParentId = CurrentBudget.Id,
+                    Category = "Transportation",
+                    Amount = 0,
+                    IncomeShare = 0
+                });
+                CurrentBudget.SubBudgets.Add(new SubBudget()
+                {
+                    Id = Guid.Empty,
+                    ParentId = CurrentBudget.Id,
+                    Category = "Entertainment",
+                    Amount = 0,
+                    IncomeShare = 0
+                });
+                CurrentBudget.SubBudgets.Add(new SubBudget()
+                {
+                    Id = Guid.Empty,
+                    ParentId = CurrentBudget.Id,
+                    Category = "Bills",
+                    Amount = 0,
+                    IncomeShare = 0
+                });
+                CurrentBudget.SubBudgets.Add(new SubBudget()
+                {
+                    Id = Guid.Empty,
+                    ParentId = CurrentBudget.Id,
+                    Category = "Miscellaneous",
+                    Amount = 0,
+                    IncomeShare = 0
+                });
+            }
+            else
+            {
+                foreach (var subBudget in subBudgetsDB)
+                {
+                    CurrentBudget.SubBudgets.Add(new SubBudget()
+                    {
+                        Id = subBudget.Key,
+                        ParentId = subBudget.Value.Item1,
+                        Category = subBudget.Value.Item2,
+                        Amount = subBudget.Value.Item3,
+                        IncomeShare = subBudget.Value.Item4
+                    });
+                }
+            }
+        }
+        else
+        {
+            CurrentBudget = new Budget()
+            {
+                Id = Guid.Empty,
+                Owner = Username,
+                Mode = BudgetMode.Monthly,
+                TotalAmount = 0,
+                DeclaredIncomeForPeriod = 0,
+                PeriodStart = DateTime.Now,
+                PeriodEnd = DateTime.Now.AddMonths(1),
+                SubBudgets = new List<SubBudget>()
+            };
+            CurrentBudget.SubBudgets.Add(new SubBudget()
+            {
+                Id = Guid.Empty,
+                ParentId = CurrentBudget.Id,
+                Category = "Housing",
+                Amount = 0,
+                IncomeShare = 0
+            });
+            CurrentBudget.SubBudgets.Add(new SubBudget()
+            {
+                Id = Guid.Empty,
+                ParentId = CurrentBudget.Id,
+                Category = "Food",
+                Amount =
+            0,
+                IncomeShare = 0
+            });
+            CurrentBudget.SubBudgets.Add(new SubBudget()
+            {
+                Id = Guid.Empty,
+                ParentId = CurrentBudget.Id,
+                Category =
+            "Transportation",
+                Amount = 0,
+                IncomeShare = 0
+            });
+            CurrentBudget.SubBudgets.Add(new SubBudget()
+            {
+                Id = Guid.Empty,
+                ParentId = CurrentBudget.Id,
+                Category = "Entertainment",
+                Amount = 0,
+                IncomeShare = 0
+            });
+            CurrentBudget.SubBudgets.Add(new SubBudget()
+            {
+                Id = Guid.Empty,
+                ParentId = CurrentBudget.Id,
+                Category = "Bills",
+                Amount
+            = 0,
+                IncomeShare = 0
+            });
+            CurrentBudget.SubBudgets.Add(new SubBudget()
+            {
+                Id = Guid.Empty,
+                ParentId = CurrentBudget.Id,
+                Category = "Miscellaneous",
+                Amount = 0,
+                IncomeShare = 0
+            });
+        }
+        budgetManager = new BudgetManagerEdition();
+        CurrentBudget.TotalAmount = budgetManager.GetMainSpent(CurrentBudget, transactionBook);
+        foreach (var subBudget in CurrentBudget.SubBudgets)
+        {
+            subBudget.Amount = budgetManager.GetSubBudgetSpent(CurrentBudget, subBudget, transactionBook);
+        }
+
+    }
+    private void CreateOrApplyMainBudget()
+    {
+        if (CurrentBudget.Id == Guid.Empty)
+        {
+            Guid newBudgetId = Guid.NewGuid();
+            CurrentBudget.Id = newBudgetId;
+            UserBudgetDB[newBudgetId] = (CurrentBudget.Owner, CurrentBudget.Mode.ToString(), CurrentBudget.TotalAmount,
+            CurrentBudget.DeclaredIncomeForPeriod, CurrentBudget.PeriodStart, CurrentBudget.PeriodEnd);
+            BudgetDataManager.SaveBudgetData(UserBudgetDB);
+
+        }
+        else
+        {
+            UserBudgetDB[CurrentBudget.Id] = (CurrentBudget.Owner, CurrentBudget.Mode.ToString(), CurrentBudget.TotalAmount,
+            CurrentBudget.DeclaredIncomeForPeriod, CurrentBudget.PeriodStart, CurrentBudget.PeriodEnd);
+            BudgetDataManager.SaveBudgetData(UserBudgetDB);
+        }
+    }
+
+    private void SetUpSubBudgets()
+    {
+        int subBudgetSumIncome = CurrentBudget.SubBudgets.Sum(sb => (int)sb.IncomeShare);
+        if (subBudgetSumIncome > CurrentBudget.DeclaredIncomeForPeriod)
+        {
+            SubBudgetError = "The total income assigned to sub budgets exceeds the declared income for the period.";
+            StateHasChanged();
+            return;
+        }
+
+        SubBudgetError = "";
+        foreach (var subBudget in CurrentBudget.SubBudgets.Where(sb => sb.IncomeShare > 0))
+        {
+            if (subBudget.Id == Guid.Empty)
+            {
+                Guid newSubBudgetId = Guid.NewGuid();
+                subBudget.Id = newSubBudgetId;
+                UserSubBudgetDB[newSubBudgetId] = (CurrentBudget.Id, subBudget.Category, subBudget.Amount, subBudget.IncomeShare);
+            }
+            else
+            {
+                UserSubBudgetDB[subBudget.Id] = (CurrentBudget.Id, subBudget.Category, subBudget.Amount, subBudget.IncomeShare);
+            }
+        }
+        SubBudgetDataManager.SaveSubBudgetData(UserSubBudgetDB);
+    }
+}
+;
