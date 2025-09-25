@@ -7,8 +7,8 @@ public class Program
     {
 
         var book = new TransactionBook();
-        book.AddTransaction(Transaction.Create("Paycheck", 2000.00m, new DateTime(2025, 9, 1), "Income", "September pay"));
-        book.AddTransaction(Transaction.Create("Groceries", -150.25m, new DateTime(2025, 9, 5), "Food", "Weekly shopping"));
+        book.AddTransaction(new Transaction(new Guid(), "test", "Paycheck", 2000.00m, new DateTime(2025, 9, 1), "Income", "September pay"));
+        book.AddTransaction(new Transaction(new Guid(), "test", "Groceries", -150.25m, new DateTime(2025, 9, 5), "Food", "Weekly shopping"));
 
         while (true)
         {

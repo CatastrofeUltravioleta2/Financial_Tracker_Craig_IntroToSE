@@ -9,15 +9,15 @@ public class SQLTransactionData
         conn.CreateTable<TransactionData>();
         conn.Close();
     }
-    public Dictionary<int, (string, string, decimal, DateTime, string, string)> GetTransactionData()
+    public Dictionary<Guid, (string, string, decimal, DateTime, string, string)> GetTransactionData()
     {
         var options = new SQLiteConnectionString(dataSource, false);
         var conn = new SQLiteConnection(options);
-        Dictionary<int, (string, string, decimal, DateTime, string, string)> TransactionDataDictionary = conn.Table<TransactionData>().ToDictionary(row => row.TransactionId, row => (row.TransactionOwner, row.Name, row.Amount, row.Date, row.Category, row.Notes));
+        Dictionary<Guid, (string, string, decimal, DateTime, string, string)> TransactionDataDictionary = conn.Table<TransactionData>().ToDictionary(row => row.TransactionId, row => (row.TransactionOwner, row.Name, row.Amount, row.Date, row.Category, row.Notes));
         conn.Close();
         return TransactionDataDictionary;
     }
-    public void SaveTransactionData(Dictionary<int, (string, string, decimal, DateTime, string, string)> newTransactionData)
+    public void SaveTransactionData(Dictionary<Guid, (string, string, decimal, DateTime, string, string)> newTransactionData)
     {
         var options = new SQLiteConnectionString(dataSource, false);
         var conn = new SQLiteConnection(options);
@@ -35,12 +35,23 @@ public class SQLTransactionData
         }
         conn.Close();
     }
-    public Dictionary<int, (string, string, decimal, DateTime, string, string)>  GetTransactionByUser(string username)
+    public Dictionary<Guid, (string, string, decimal, DateTime, string, string)> GetTransactionByUser(string username)
     {
         var options = new SQLiteConnectionString(dataSource, false);
         var conn = new SQLiteConnection(options);
         var userTransactions = conn.Table<TransactionData>().Where(tr => tr.TransactionOwner == username).ToDictionary(row => row.TransactionId, row => (row.TransactionOwner, row.Name, row.Amount, row.Date, row.Category, row.Notes));
         conn.Close();
         return userTransactions;
+    }
+    public void DeleteTransaction(Guid transactionId)
+    {
+        var options = new SQLiteConnectionString(dataSource, false);
+        var conn = new SQLiteConnection(options);
+        var record = conn.Table<TransactionData>().FirstOrDefault(tr => tr.TransactionId == transactionId);
+        if (record != null)
+        {
+            conn.Delete(record);
+        }
+        conn.Close();
     }
 }

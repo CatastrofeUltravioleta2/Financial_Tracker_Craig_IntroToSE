@@ -12,6 +12,8 @@ public static class TransactionEditor
         if (index < 0 || index >= list.Count) throw new ArgumentOutOfRangeException(nameof(index));
 
         var old = list[index];
+        Guid id = old.TransactionId;
+        string owner = old.TransactionOwner;
         var name = old.Name;
         var amount = old.Amount;
         var date = old.Date;
@@ -39,7 +41,7 @@ public static class TransactionEditor
                 throw new ArgumentException("Unknown field", nameof(fieldName));
         }
 
-        var updated = Transaction.Create(name, amount, date, category, notes);
+        var updated = new Transaction(id, owner, name, amount, date, category, notes);
         book.UpdateTransaction(index, updated);
         return updated;
     }

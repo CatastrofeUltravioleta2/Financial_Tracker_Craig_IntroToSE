@@ -1,7 +1,18 @@
 using System;
-
+public enum TransactionCategories
+{
+    Food,
+    Utilities,
+    Entertainment,
+    Transportation,
+    Healthcare,
+    Education,
+    Miscellaneous
+}
 public class Transaction
 {
+    public Guid TransactionId { get; set; } = Guid.Empty;
+    public string TransactionOwner { get; set; } = "";
     public string Name { get; set; } = string.Empty;
     public decimal Amount { get; set; }
     public DateTime Date { get; set; }
@@ -9,21 +20,23 @@ public class Transaction
     public string Notes { get; set; } = string.Empty;
 
     // Method creating a Transaction
-    public static Transaction Create(string name, decimal amount, DateTime date, string category, string notes)
+    public  Transaction(Guid Id, string owner, string name, decimal amount, DateTime date, string category, string notes)
     {
-        return new Transaction
-        {
-            Name = name ?? string.Empty,
-            Amount = amount,
-            Date = date,
-            Category = category ?? string.Empty,
-            Notes = notes ?? string.Empty
-        };
+
+        TransactionId = Id;
+        TransactionOwner = owner;
+        Name = name ?? string.Empty;
+        Amount = amount;
+        Date = date;
+        Category = category ?? string.Empty;
+        Notes = notes ?? string.Empty;
+
+
     }
 
     public override string ToString()
     {
-    return $"{Name} | {Date:MM/dd/yyyy} | ${Amount:N2} | {Category} | {Notes}";
+        return $"{Name} | {Date:MM/dd/yyyy} | ${Amount:N2} | {Category} | {Notes}";
     }
 }
 
@@ -37,11 +50,10 @@ public class TransactionBook
     {
         if (tx == null) throw new ArgumentNullException(nameof(tx));
         _transactions.Add(tx);
-    _totalAmount += tx.Amount;
+        _totalAmount += tx.Amount;
     }
 
-    // Return read-only view of transactions
-    public IReadOnlyList<Transaction> ListTransactions() => _transactions.AsReadOnly();
+    public List<Transaction> ListTransactions() => _transactions;
 
     // Replace transaction at index and adjust running total
     public void UpdateTransaction(int index, Transaction newTx)
@@ -62,7 +74,7 @@ public class TransactionBook
     public void Clear()
     {
         _transactions.Clear();
-    _totalAmount = 0.0m;
+        _totalAmount = 0.0m;
     }
 
     // Remove the transaction at the specified index and update total
